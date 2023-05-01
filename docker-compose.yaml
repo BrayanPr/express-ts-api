@@ -1,0 +1,31 @@
+version: '3.4'
+
+networks:
+  dbconnection:
+
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: demo
+      MYSQL_ROOT_PASSWORD: root
+
+    restart: always
+    networks:
+      dbconnection:
+    ports:
+      - 3306:3306
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  demo:
+    depends_on: 
+      db:
+        condition: service_healthy
+    image: brayanpr/node-express-ts-api
+    ports:
+      - 3000:3000
+    networks:
+      dbconnection:

@@ -1,0 +1,642 @@
+# openapi version
+openapi: 3.0.0
+
+# document metadata
+info:
+  version: 1.0.0
+  title: User API
+
+# server information
+servers:
+  - url: http://localhost:3000
+    description: Development server
+
+# API paths and operations
+paths:
+  /api/users/:
+    post:
+      summary: Creates a new user
+      tags:
+        - User Management
+      parameters:
+      - in: body
+        name: body
+        description: User object that needs to be created
+        required: true
+        schema:
+          $ref: '#/components/schemas/UserDTO'
+        
+      responses:
+        200:
+          description: A success response with the user created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        404:
+          description: If team sent, when nof founded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      tags:
+        - User Management
+      summary: Bring all users
+      responses:
+        200:
+          description: A success response with all users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/users/{id}:
+    get:
+      tags:
+        - User Management
+      summary: Bring an user by id
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user to retrieve
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: A success response with the user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        404:
+          description: If user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - User Management
+      summary: Delete an user by id
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user to delete
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: A success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        404:
+          description: If user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - User Management
+      summary: Upatde an user by id
+      parameters:
+        - in: body
+          name: body
+          description: User object that needs to be created
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserUpdateDTO'
+        - name: userId
+          in: path
+          description: ID of the user to update
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: A success response with the user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        404:
+          description: If user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  
+  /api/teams/:
+    post:
+      summary: Creates a new team
+      tags:
+        - Team Management
+      parameters:
+      - in: body
+        name: body
+        description: Team object that needs to be created
+        required: true
+        schema:
+          $ref: '#/components/schemas/TeamDTO'
+        
+      responses:
+        200:
+          description: A success response with the team created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        400:
+          description: A error response with the errors of the request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      tags:
+        - Team Management
+      summary: Bring all teams
+      responses:
+        200:
+          description: A success response with all teams
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/teams/{id}:
+    get:
+      tags:
+        - Team Management
+      summary: Bring an team by id
+      parameters:
+        - name: teamId
+          in: path
+          description: ID of the team to retrieve
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: A success response with the team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        404:
+          description: If team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Team Management
+      summary: Delete an team by id
+      parameters:
+        - name: teamId
+          in: path
+          description: ID of the team to delete
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: A success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        404:
+          description: If teamn not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Team Management
+      summary: Upatde an team by id
+      parameters:
+        - in: body
+          name: body
+          description: team object that needs to be created
+          required: true
+          schema:
+            $ref: '#/components/schemas/TeamDTO'
+        - name: teamId
+          in: path
+          description: ID of the team to update
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: A success response with the team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        404:
+          description: If team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/accounts/:
+    post:
+      summary: Creates a new account
+      tags:
+        - Account Management
+      parameters:
+      - in: body
+        name: body
+        description: Account object that needs to be created
+        required: true
+        schema:
+          $ref: '#/components/schemas/AccountDTO'
+        
+      responses:
+        200:
+          description: A success response with the account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        400:
+          description: A error response with the errors of the request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      tags:
+        - Account Management
+      summary: Bring all accounts
+      responses:
+        200:
+          description: A success response with all accounts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/accounts/{id}:
+    get:
+      tags:
+        - Account Management
+      summary: Bring an account by id
+      parameters:
+        - name: accountId
+          in: path
+          description: ID of the account to retrieve
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: A success response with the account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        404:
+          description: If account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Account Management
+      summary: Delete an acocunt by id
+      parameters:
+        - name: accountId
+          in: path
+          description: ID of the account to delete
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: A success response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        404:
+          description: If account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Account Management
+      summary: Upatde an account by id
+      parameters:
+        - in: body
+          name: body
+          description: account object that needs to be updated
+          required: true
+          schema:
+            $ref: '#/components/schemas/TeamDTO'
+        - name: teamId
+          in: path
+          description: ID of the account to update
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: A success response with the account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        404:
+          description: If account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  
+  /api/operations/move:
+    post:
+      tags: 
+        - Operation Management
+      summary: Moves a user into to a new team
+      parameters:
+        - in: body
+          name: body
+          description: The user and the team desired to move
+          required: true
+          schema:
+            $ref: '#/components/schemas/MoveUserRequest'
+      responses:
+        200:
+          description: A success response with the history of the movement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        404:
+          description: If team not found, or user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        400:
+          description: If the user is already on the team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      tags: 
+        - Operation Management
+      summary: Get all the movement history
+      responses:
+        200:
+          description: A success response with the history of movements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  
+# reusable components
+components:
+  schemas:
+  
+    User:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        experience:
+          type: string
+        cv:
+          type: string
+        englishLevel:
+          type: string
+        role:
+          type: string
+        teamId:
+          type: number
+        team:
+          type: object
+    UserDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        experience:
+          type: string
+        cv:
+          type: string
+        englishLevel:
+          type: string
+        role:
+          type: string
+        teamId:
+          type: number
+    UserUpdateDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        experience:
+          type: string
+        cv:
+          type: string
+        englishLevel:
+          type: string
+    
+    Team:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        description:
+          type: string
+    TeamDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+
+    Account:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        customer:
+          type: string
+        manager:
+          type: string
+        teamId:
+          type: number
+    AccountDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        customer:
+          type: string
+        manager:
+          type: string
+        teamId:
+          type: number
+
+    MoveUserRequest:
+      type: object
+      properties:
+        user:
+          type: number
+        team:
+          type: number
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Error message
+        error:
+          type: string
+          example: Error
+        statusCode:
+          type: number
+          example: 400 | 500 | 404
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Success
+        instance:
+          type: undefined
+        statusCode:
+          type: number
+          example: 200 | 201
