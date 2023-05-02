@@ -1,40 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { decode, verify } from 'jsonwebtoken';
-import { ErrorResponse } from '../../types';
+import { verify } from 'jsonwebtoken';
 import UserController from '../controllers/user.controller';
+import { getToken, UnahutorizedResponse, isTokenExpired } from '../utils';
 
 const userController = new UserController()
-
-function getToken(headers:any): string | null{
-    let token = headers.authorization
-    if(token == undefined || token == null)
-        return null
-            
-    else return token
-}
-export const isTokenExpired = (token: string): boolean => {
-    try {
-        const { exp } = decode(token) as {
-            exp: number;
-        };
-        const expirationDatetimeInSeconds = exp * 1000;
-
-        return Date.now() >= expirationDatetimeInSeconds;
-    } catch {
-        return true;
-    }
-};
-
-const UnahutorizedResponse = (message:string, error:string = "token"):ErrorResponse => {
-
-    let response:ErrorResponse = {
-        message,
-        error,
-        statusCode:401
-    }
-
-    return response
-}
 
 async function verifyToken(req: Request, res: Response, next: NextFunction, user_type:number){
     let token = getToken(req.headers)

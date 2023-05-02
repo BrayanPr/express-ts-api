@@ -1,22 +1,19 @@
 import {
   SuccessResponse,
-  ErrorResponse,
   HistoryDTO,
   User as IUser,
-  HistoyByDatesRequest,
 } from "../../types";
+import {
+  BadRequestResponse,
+  FoundResponse,
+  ServerErrorResponse,
+  sequelizeErrorHandler,
+  toHistoryDto,
+} from "../utils";
 import UserController from "./user.controller";
 import TeamController from "./team.controller";
 import History from "../models/History.model";
-import {
-  sequelizeErrorHandler,
-  toHistoryByDates,
-  toHistoryDto,
-  toUserDto,
-} from "../utils";
-import { LogError } from "../app";
 import User from "../models/User.model";
-
 
 export default class OperationController {
   
@@ -24,77 +21,37 @@ export default class OperationController {
   userController = new UserController()
 
   async moveUser(body: any) {
+
     let user: IUser;
     let hisotryDtoErrors = toHistoryDto(body);
 
-    if (Array.isArray(hisotryDtoErrors)) {
-      const response: ErrorResponse = {
-        message: "Error while moving user",
-        error: hisotryDtoErrors.join(", "),
-        statusCode: 400,
-      };
-      return response;
-    }
+    if (Array.isArray(hisotryDtoErrors))
+      return BadRequestResponse(hisotryDtoErrors.join(", "));
+      
     let historyDto: HistoryDTO = hisotryDtoErrors;
     let teamQuery = await this.teamController.getTeamById(historyDto.teamJoin);
 
-    if (teamQuery.statusCode != 200) {
-      let queryResponse: ErrorResponse;
-      if ("error" in teamQuery) {
-        queryResponse = teamQuery;
-      } else {
-        const message = "Error while moving user: " + JSON.stringify(body);
-        const response: ErrorResponse = {
-          message,
-          error: "Unknown error",
-          statusCode: 500,
-        };
-        queryResponse = response;
-        LogError(message + " " + response.error);
-      }
-      return queryResponse;
-    }
+    if (teamQuery.statusCode != 200) 
+      if ("error" in teamQuery)
+        return teamQuery;
+      else 
+        return ServerErrorResponse("Unknown error",  "Error while moving user: " + JSON.stringify(body))
 
     let userQuery = await this.userController.getUserById(historyDto.user);
 
-    if (userQuery.statusCode != 200) {
-      let queryResponse: ErrorResponse;
-      if ("error" in userQuery) {
-        queryResponse = userQuery;
-      } else {
-        const message = "Error while moving user: " + JSON.stringify(body);
-        const response: ErrorResponse = {
-          message,
-          error: "Unknown error",
-          statusCode: 500,
-        };
-        queryResponse = response;
-        LogError(message + " " + response.error);
-      }
-      return queryResponse;
-    } else {
-      if ("instance" in userQuery) {
-        user = userQuery.instance;
-      } else {
-        const message = "Error while consulting user: " + JSON.stringify(body);
-        const response: ErrorResponse = {
-          message,
-          error: "Unknown error",
-          statusCode: 500,
-        };
-        LogError(message + " " + response.error);
-        return response;
-      }
-    }
+    if (userQuery.statusCode != 200)
+      if ("error" in userQuery) 
+        return userQuery;
+       else 
+        return ServerErrorResponse("Unknown error","Error while moving user: " + JSON.stringify(body))
+    
+    if ("instance" in userQuery)
+      user = userQuery.instance;
+    else 
+      return ServerErrorResponse("Unknown error", "Error while consulting user: " + JSON.stringify(body))    
 
-    if (user.teamId == historyDto.teamJoin) {
-      let response: ErrorResponse = {
-        message: "Error while moving user",
-        error: "User: " + user.id + " is already on team:" + user.teamId,
-        statusCode: 400,
-      };
-      return response;
-    }
+    if (user.teamId == historyDto.teamJoin)
+      return BadRequestResponse("Error while moving user", `User:${user.id} is already on team ${user.teamId}`)
 
     historyDto.teamLeft = user.teamId;
 
@@ -109,14 +66,8 @@ export default class OperationController {
         return false;
       });
 
-    if (!userUpdated) {
-      let response = {
-        message: "Error while trying to update user",
-        error: sequelizeErrorHandler(moveUserError),
-        statusCode: 500,
-      };
-      return response;
-    }
+    if (!userUpdated)
+      return ServerErrorResponse( "Error while trying to update user",sequelizeErrorHandler(moveUserError))
 
     return await History.create(historyDto)
       .then((instance: History) => {
@@ -128,77 +79,15 @@ export default class OperationController {
         return response;
       })
       .catch(async (err: any) => {
-        let message = "Error while moving user";
-        let error = sequelizeErrorHandler(err);
-        let response: ErrorResponse = {
-          message,
-          error,
-          statusCode: 500,
-        };
-        LogError(message + ": " + error);
-        user.teamId = historyDto.teamLeft;
-        await User.update(toUserDto(user), { where: { id: user.id } });
-        return response;
+        await User.update({teamId : historyDto.teamLeft}, { where: { id: user.id } });
+        return ServerErrorResponse(sequelizeErrorHandler(err),"Error while moving user")
       });
   }
   async getAllHistory() {
     return await History.findAll()
-      .then((instance: Array<History>) => {
-        let response: SuccessResponse = {
-          message: "History consulted successully",
-          instance,
-          statusCode: 200,
-        };
-        return response;
-      })
-      .catch((err) => {
-        let message = "Error while consulting users";
-        let error = sequelizeErrorHandler(err);
-        let response: ErrorResponse = {
-          message,
-          error,
-          statusCode: 500,
-        };
-        return response;
-      });
-  }
-  async getHistoryByDates(body: any) {
-    let historyByDatesRequestErrors = toHistoryByDates(body);
-
-    if (Array.isArray(historyByDatesRequestErrors)) {
-      const response: ErrorResponse = {
-        message: "Error while consulting dates",
-        error: historyByDatesRequestErrors.join(", "),
-        statusCode: 400,
-      };
-      return response;
-    }
-    let req: HistoyByDatesRequest = historyByDatesRequestErrors;
-
-    return await History.findAll({
-      where: {
-        date: {
-          $between: [req.startDate, req.endDate],
-        },
-      },
-    })
-      .then((instance: Array<History>) => {
-        let response: SuccessResponse = {
-          message: "History consulted successully",
-          instance,
-          statusCode: 200,
-        };
-        return response;
-      })
-      .catch((err) => {
-        let message = "Error while consulting users";
-        let error = sequelizeErrorHandler(err);
-        let response: ErrorResponse = {
-          message,
-          error,
-          statusCode: 500,
-        };
-        return response;
-      });
+      .then((instance: Array<History>) => 
+        FoundResponse(instance, 'History'))
+      .catch((err) =>
+        ServerErrorResponse(sequelizeErrorHandler(err),"Error while consulting users"));
   }
 }

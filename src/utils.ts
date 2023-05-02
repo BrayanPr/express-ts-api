@@ -2,10 +2,12 @@ import { Sequelize } from "sequelize-typescript";
 import User from "./models/User.model";
 import Team from "./models/Team.model";
 import History from "./models/History.model"
-import { AccountDTO, AuthRequest, HistoryDTO, HistoyByDatesRequest, TeamDTO, UserDTO, UserUpdateDTO } from "../types";
+import { AccountDTO, AuthRequest, ErrorResponse, HistoryDTO, HistoyByDatesRequest, SuccessResponse, TeamDTO, UserDTO, UserUpdateDTO } from "../types";
 import Account from "./models/Account.model";
-
-const validateString = (value: string | null | undefined, name: string): string | null => {
+import { decode } from "jsonwebtoken";
+import { LogError } from "./app";
+import bcrypt from 'bcrypt'
+function validateString (value: string | null | undefined, name: string): string | null {
     if (!value || value.trim().length === 0) {
       return (`${name} is required`);
     }
@@ -140,11 +142,9 @@ export function toAccountUpdateDto(body:any):Array<string> | AccountDTO{
     return accountDto
 }
 
-
 export function toAccountDto(body:any):Array<string> | AccountDTO{
     const { name, client, manager, teamId } = body
     let errors:Array<string> = [];
-
     let verifName = validateString(name, 'name')
     if (verifName != null)
         errors.push(verifName)
@@ -277,8 +277,104 @@ export function toUserDto(body:any):Array<string> | UserDTO{
     
 }
 
+export function sequelizeErrorHandler(err:any):string{
+    let errors = err.errors
+            let errorMessages:Array<string> = []
+            errors.forEach((element:any) => {
+                errorMessages.push(element.message)
+            });
+    let error = errorMessages.join(', ')
+
+    return error
+}
+export function getToken(headers:any): string | null{
+    let token = headers.authorization
+    if(token == undefined || token == null)
+        return null
+            
+    else return token
+}
+export function isTokenExpired(token: string): boolean {
+    try {
+        const { exp } = decode(token) as {
+            exp: number;
+        };
+        const expirationDatetimeInSeconds = exp * 1000;
+
+        return Date.now() >= expirationDatetimeInSeconds;
+    } catch {
+        return true;
+    }
+};
+
+export const UnahutorizedResponse = (message:string, error:string = "token"):ErrorResponse => 
+({
+    message,
+    error,
+    statusCode:401
+})
+
+
+export const NotFoundResponse = (id:number, modelName:string):ErrorResponse =>
+{
+    let message:string = `${modelName} not found.`;
+    let error:string = `${modelName} with id: ${id} could not be found.`;
+    LogError(message + ": " + error);
+    return {
+    message,
+    error, 
+    statusCode:404
+}}
+
+export const ServerErrorResponse = (error:string="Unknown error.", message:string='Server error.'):ErrorResponse =>
+{
+    LogError(message + ": " + error);
+    return {message,error,statusCode:500}
+}
+
+export const BadRequestResponse = (error:string, message:string=`Request format is not valid.`):ErrorResponse =>
+({
+    message,
+    error, 
+    statusCode:400
+})
+
+export const BadCredentialsResponse = ():ErrorResponse =>({
+    message: "Error while trying to log in",
+    error: "Invalid credentials",
+    statusCode: 401
+})
+
+export const FoundResponse = (instance:any, modelName:string):SuccessResponse =>
+({
+    message:`${modelName} consulted succesfully`,
+    instance,
+    statusCode:200
+})
+
+export const CreatedResponse = (instance:any, modelName:string):SuccessResponse =>
+({
+    message:`${modelName} created succesfully`,
+    instance,
+    statusCode:201
+})
+
+export const UpdatedResponse = (instance:any, modelName:string):SuccessResponse =>
+({
+    message:`${modelName} updated succesfully`,
+    instance,
+    statusCode:200
+})
+
+export const DeletedResponse = (instance:any, modelName:string):SuccessResponse =>
+({
+    message:`${modelName} deleted succesfully`,
+    instance,
+    statusCode:200
+})
+
 export default async function connect_db(test:boolean=false){
-    const host = "db"
+    const host = "localhost"
 
     const connection = new Sequelize(
     {
@@ -302,14 +398,9 @@ export default async function connect_db(test:boolean=false){
    
 }
 
-
-export function sequelizeErrorHandler(err:any):string{
-    let errors = err.errors
-            let errorMessages:Array<string> = []
-            errors.forEach((element:any) => {
-                errorMessages.push(element.message)
-            });
-    let error = errorMessages.join(', ')
-
-    return error
-}
+export const hashPassword = async (plaintextPassword:string) => 
+    await bcrypt.hash(plaintextPassword, 10);
+    
+  // compare password
+export const comparePassword = async (plaintextPassword:string, hash:string) =>
+    await bcrypt.compare(plaintextPassword, hash);

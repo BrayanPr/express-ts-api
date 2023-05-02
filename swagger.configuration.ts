@@ -10,7 +10,7 @@ const conf:swaggerJSDoc.Options = {
         },
         servers:[
             {
-                url: "http://localhost:300"
+                url: "http://localhost:3000"
             }
         ]
     },

@@ -9,7 +9,6 @@ chai.use(chaiHttp);
 
 let app = new App(801, true).app;
 
-
 describe("accounts API", () => {
     let accountId: number;
     let token: string;

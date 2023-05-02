@@ -18,9 +18,5 @@ operationRoutes.get('/',async (_req, res) => {
     res.status(response.statusCode).send(response);
 })
 
-operationRoutes.post('/dates',async (req, res) => {
-    let response = await controller.getHistoryByDates(req.body);
-    res.status(response.statusCode).send(response);
-})
 
 export default operationRoutes;
