@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { verify } from 'jsonwebtoken';
 import UserController from '../controllers/user.controller';
-import { getToken, UnahutorizedResponse, isTokenExpired } from '../utils';
-
+import { getToken, isTokenExpired } from '../utils';
+import { UnahutorizedResponse } from '../responses'
 const userController = new UserController()
 
 async function verifyToken(req: Request, res: Response, next: NextFunction, user_type:number){

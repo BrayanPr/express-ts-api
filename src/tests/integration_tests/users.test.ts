@@ -1,7 +1,7 @@
 import chai from "chai";
 import chaiHttp from "chai-http";
-import App from "../app";
-import { AuthRequest, UserDTO, UserUpdateDTO } from "../../types";
+import App from "../../app";
+import { AuthRequest, UserDTO, UserUpdateDTO } from "../../../types";
 
 const expect = chai.expect;
 
